@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
     "os"
-	"os/exec"
 	"time"
 )
 
@@ -14,6 +13,7 @@ type Config struct {
     message string;
 }
 
+// setup() returns a Config struct with the date, time, and message from the command line arguments.
 func setup() (Config, error){
     os.Args = os.Args[1:]
 
@@ -43,42 +43,6 @@ func setup() (Config, error){
     return Config{date: date, time: time, message: message}, nil
 }
 
-func getDateFromInput(dateString string) (string, error) {
-    if dateString == "today" {
-        return time.Now().Format("2006-01-02"), nil
-    }else if dateString == "tomorrow" {
-        return time.Now().AddDate(0, 0, 1).Format("2006-01-02"), nil
-    }else if dateString == "yesterday" {
-        return time.Now().AddDate(0, 0, -1).Format("2006-01-02"), nil
-    }
-
-    // Check if the date is in the correct format
-    _, err := time.Parse("2006-01-02", dateString)
-    if err != nil {
-        return "", errors.New("Date is not in the correct format")
-    }
-
-    // If the date is not a special case and it is in the correct format, use it as is.
-    return dateString, nil
-}
-
-func getInputFromVim(fileName string) (string, error) {
-    os.Create("temp.txt")
-    vimCommand := exec.Command("nvim", fileName)
-    vimCommand.Stdin = os.Stdin
-    vimCommand.Stdout = os.Stdout
-    err := vimCommand.Run()
-    if err != nil {
-        return "", errors.New("Error running nvim")
-    }
-
-    data, err := os.ReadFile("temp.txt")
-    if err != nil {
-        return "", errors.New("Error reading nvims output")
-    }
-
-    return string(data), nil
-}
 
 func main() {
     config, err := setup()
@@ -87,5 +51,7 @@ func main() {
         os.Exit(1)
     }
 
-    fmt.Println("Hello, World!\n" + config.date + "\n" + config.time + "\n" + config.message)
+    convertedDateInput, err := getDateFromInput(config.date)
+
+    fmt.Println("Hello, World!\n" + convertedDateInput + "\n" + config.time + "\n" + config.message)
 }
