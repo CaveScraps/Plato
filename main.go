@@ -43,7 +43,6 @@ func setup() (Config, error){
     return Config{date: date, time: time, message: message}, nil
 }
 
-
 func main() {
     config, err := setup()
     if err != nil {
@@ -52,6 +51,36 @@ func main() {
     }
 
     convertedDateInput, err := getDateFromInput(config.date)
+    filename := convertedDateInput + ".md"
 
-    fmt.Println("Hello, World!\n" + convertedDateInput + "\n" + config.time + "\n" + config.message)
+    if config.message == "" {
+        fmt.Println("No message provided, exiting.")
+        os.Exit(1)
+    }
+
+    var journalFile *os.File
+    //If file doesn't exists already, then create it, otherwise open it to append.
+    if _, err := os.Stat(filename); err != nil {
+        file, err := os.Create(filename)
+        if err != nil {
+            fmt.Println(err)
+            os.Exit(1)
+        }
+        journalFile = file
+    }else{
+        file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
+        if err != nil {
+            fmt.Println(err)
+            os.Exit(1)
+        }
+        journalFile = file
+    }
+
+    //Append string to file
+    defer journalFile.Close()
+    _, err = journalFile.WriteString("\n" + config.time + ": " + config.message)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
 }
