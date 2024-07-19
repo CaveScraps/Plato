@@ -28,21 +28,27 @@ func setup() (Config, error) {
 		return Config{}, errors.New("Too many arguments provided, is your message in quotes?")
 	}
 
+	message, err := func() (string, error) {
+		if len(os.Args) == 1 {
+			// If there is no command line message, open vim for user to input message.
+			data, err := getInputFromVim()
+			message := data
+			if err != nil {
+				return "", err
+			}
+			return message, nil
+		} else {
+			message := string(os.Args[1]) + "\n" // Vim output was giving us a newline so we add one here to match.
+			return message, nil
+		}
+	}()
+
 	date := string(os.Args[0])
 	time := time.Now().Format("15:04")
-	message := ""
 
-	if len(os.Args) == 1 {
-		// If there is no command line message, open vim for user to input message.
-		data, err := getInputFromVim()
-		message = data
-		if err != nil {
-			return Config{}, err
-		}
-	} else {
-		message = string(os.Args[1]) + "\n" // Vim output was giving us a newline so we add one here to match.
+	if err != nil {
+		return Config{}, err
 	}
-
 	return Config{date: date, time: time, message: message, isTodoItem: *todoPtr}, nil
 }
 
@@ -63,7 +69,7 @@ func main() {
 	}
 
 	filename := convertedDateInput + ".md"
-	if err := CreateFileIfNotExists(filename); err != nil {
+	if err := createFileIfNotExists(filename); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

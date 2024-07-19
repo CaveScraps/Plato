@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-func CreateFileIfNotExists(filename string) error {
+func createFileIfNotExists(filename string) error {
 	if !fileExists(filename) {
 		_, err := os.Create(filename)
 		if err != nil {
