@@ -5,17 +5,20 @@ import (
 	"fmt"
     "os"
 	"time"
+    "flag"
 )
 
 type Config struct {
-    date string;
-    time string;
-    message string;
+    date string
+    time string
+    message string
+    isTodoItem bool
 }
 
-// setup() returns a Config struct with the date, time, and message from the command line arguments.
 func setup() (Config, error){
-    os.Args = os.Args[1:]
+    todoPtr := flag.Bool("t", false, "Add a todo item instead of a journal entry")
+    flag.Parse()
+    os.Args = flag.Args()
 
     // Looks like golang flags doesn't allow flags after other args so for now we will use this.
     if len(os.Args) < 1 {
@@ -40,8 +43,9 @@ func setup() (Config, error){
         message = string(os.Args[1])
     }
 
-    return Config{date: date, time: time, message: message}, nil
+    return Config{date: date, time: time, message: message, isTodoItem: *todoPtr}, nil
 }
+
 
 func main() {
     config, err := setup()
@@ -49,38 +53,36 @@ func main() {
         fmt.Println(err)
         os.Exit(1)
     }
-
     convertedDateInput, err := getDateFromInput(config.date)
-    filename := convertedDateInput + ".md"
-
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
     if config.message == "" {
         fmt.Println("No message provided, exiting.")
         os.Exit(1)
     }
 
-    var journalFile *os.File
-    //If file doesn't exists already, then create it, otherwise open it to append.
-    if _, err := os.Stat(filename); err != nil {
-        file, err := os.Create(filename)
-        if err != nil {
-            fmt.Println(err)
-            os.Exit(1)
-        }
-        journalFile = file
-    }else{
-        file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
-        if err != nil {
-            fmt.Println(err)
-            os.Exit(1)
-        }
-        journalFile = file
-    }
-
-    //Append string to file
-    defer journalFile.Close()
-    _, err = journalFile.WriteString("\n" + config.time + ": " + config.message)
-    if err != nil {
+    filename := convertedDateInput + ".md"
+    if err := CreateFileIfNotExists(filename); err != nil {
         fmt.Println(err)
         os.Exit(1)
+    }
+
+    //Todos go to the bottom of the file, the rest is placed newest at the top.
+    if config.isTodoItem {
+        message := "- [ ] " + config.message
+        err := appendToFile(filename, message)
+        if err != nil {
+            fmt.Println(err)
+            os.Exit(1)
+        }
+    }else{
+        message := config.time + " " + config.message
+        err := prependToFile(filename, message)
+        if err != nil {
+            fmt.Println(err)
+            os.Exit(1)
+        }
     }
 }
