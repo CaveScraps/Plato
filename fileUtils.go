@@ -48,10 +48,10 @@ func prependToFile(filename string, data string) error {
 
 func appendToFile(filename string, data string) error {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	defer file.Close()
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	_, err = file.WriteString(data + "\n")
 	if err != nil {

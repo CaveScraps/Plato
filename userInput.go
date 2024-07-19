@@ -30,10 +30,10 @@ func getDateFromInput(dateString string) (string, error) {
 // getInputFromVim opens vim for the user to input a message and returns the message as a string or an error.
 func getInputFromVim() (string, error) {
 	tempFile, err := os.CreateTemp(".", "")
-	defer os.Remove(tempFile.Name())
 	if err != nil {
 		return "", err
 	}
+	defer os.Remove(tempFile.Name())
 
 	vimCommand := exec.Command("nvim", tempFile.Name())
 	vimCommand.Stdin = os.Stdin
