@@ -28,17 +28,22 @@ func getDateFromInput(dateString string) (string, error) {
 }
 
 // getInputFromVim opens vim for the user to input a message and returns the message as a string or an error.
-func getInputFromVim(fileName string) (string, error) {
-    os.Create("temp.txt")
-    vimCommand := exec.Command("nvim", fileName)
+func getInputFromVim() (string, error) {
+    tempFile, err := os.CreateTemp(".", "")
+    defer os.Remove(tempFile.Name())
+    if err != nil {
+        return "", err
+    }
+
+    vimCommand := exec.Command("nvim", tempFile.Name())
     vimCommand.Stdin = os.Stdin
     vimCommand.Stdout = os.Stdout
-    err := vimCommand.Run()
+    err = vimCommand.Run()
     if err != nil {
         return "", errors.New("Error running nvim")
     }
 
-    data, err := os.ReadFile("temp.txt")
+    data, err := os.ReadFile(tempFile.Name())
     if err != nil {
         return "", errors.New("Error reading nvim's output")
     }

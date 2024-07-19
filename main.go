@@ -34,7 +34,7 @@ func setup() (Config, error){
 
     if len(os.Args) == 1 {
         // If there is no command line message, open vim for user to input message.
-        data, err := getInputFromVim("temp.txt")
+        data, err := getInputFromVim()
         message = data
         if err != nil {
             return Config{}, err
