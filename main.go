@@ -40,7 +40,7 @@ func setup() (Config, error) {
 			return Config{}, err
 		}
 	} else {
-		message = string(os.Args[1])
+		message = string(os.Args[1]) + "\n" // Vim output was giving us a newline so we add one here to match.
 	}
 
 	return Config{date: date, time: time, message: message, isTodoItem: *todoPtr}, nil
