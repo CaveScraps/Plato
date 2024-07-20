@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
 	"os"
 	"time"
 )
@@ -13,6 +14,7 @@ type Config struct {
 	time       string
 	message    string
 	isTodoItem bool
+	noteDir    string
 }
 
 func setup() (Config, error) {
@@ -42,14 +44,23 @@ func setup() (Config, error) {
 			return message, nil
 		}
 	}()
+	if err != nil {
+		return Config{}, err
+	}
 
 	date := string(os.Args[0])
 	time := time.Now().Format("15:04")
 
-	if err != nil {
+	err = godotenv.Load(".platoenv")
+	noteDir, exists := os.LookupEnv("PLATO_NOTES_DIR")
+	if !exists {
+		noteDir = os.Getenv("HOME") + "/notes/"
+	}
+	if err := os.MkdirAll(noteDir, 0777); err != nil {
 		return Config{}, err
 	}
-	return Config{date: date, time: time, message: message, isTodoItem: *todoPtr}, nil
+
+	return Config{date: date, time: time, message: message, isTodoItem: *todoPtr, noteDir: noteDir}, nil
 }
 
 func main() {
@@ -68,7 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	filename := convertedDateInput + ".md"
+	filename := config.noteDir + convertedDateInput + ".md"
 	if err := createFileIfNotExists(filename); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
