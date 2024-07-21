@@ -79,12 +79,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	filename := config.noteDir + convertedDateInput + ".md"
-	if err := createFileIfNotExists(filename); err != nil {
+	// This will create the file if it doesn't exist and copy any outstanding todo items from the previous day.
+	if err := createJournalFileIfNotExists(convertedDateInput, config.noteDir); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
+	filename := config.noteDir + convertedDateInput + ".md"
 	//Todos go to the bottom of the file, the rest is placed newest at the top.
 	if config.isTodoItem {
 		message := "- [ ] " + config.message

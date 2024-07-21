@@ -2,13 +2,52 @@ package main
 
 import (
 	"os"
+	"strings"
+	"time"
 )
 
-func createFileIfNotExists(filename string) error {
+func createJournalFileIfNotExists(date string, location string) error {
+	filename := location + date + ".md"
 	if !fileExists(filename) {
 		_, err := os.Create(filename)
 		if err != nil {
 			return err
+		}
+
+		err = copyIncompleteTodos(location, date)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func copyIncompleteTodos(noteDir string, currentDay string) error {
+	currentDayAsDate, err := time.Parse("2006-01-02", currentDay)
+	if err != nil {
+		return err
+	}
+
+	previousDay := currentDayAsDate.AddDate(0, 0, -1)
+	previousDayFile := noteDir + previousDay.Format("2006-01-02") + ".md"
+
+	// If the previous day file does not exist, there is nothing to copy.
+	if fileExists(previousDayFile) == false {
+		return nil
+	}
+
+	content, err := os.ReadFile(previousDayFile)
+	if err != nil {
+		return err
+	}
+
+	currentDayFile := noteDir + currentDay + ".md"
+	for _, line := range strings.Split(string(content), "\n") {
+		if strings.HasPrefix(line, "- [ ]") {
+			err := appendToFile(currentDayFile, line)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
