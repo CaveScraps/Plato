@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/joho/godotenv"
 	"os"
 	"time"
 )
@@ -51,11 +50,11 @@ func setup() (Config, error) {
 	date := string(os.Args[0])
 	time := time.Now().Format("15:04")
 
-	err = godotenv.Load(".platoenv")
 	noteDir, exists := os.LookupEnv("PLATO_NOTES_DIR")
 	if !exists {
 		noteDir = os.Getenv("HOME") + "/notes/"
 	}
+
 	if err := os.MkdirAll(noteDir, 0777); err != nil {
 		return Config{}, err
 	}
