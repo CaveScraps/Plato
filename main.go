@@ -94,7 +94,7 @@ func main() {
 			os.Exit(1)
 		}
 	} else {
-		message := config.time + " " + config.message
+		message := "**" + config.time + "**" + " " + config.message
 		err := prependToFile(filename, message)
 		if err != nil {
 			fmt.Println(err)
