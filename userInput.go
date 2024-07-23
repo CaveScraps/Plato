@@ -28,8 +28,8 @@ func getDateFromInput(dateString string) (string, error) {
 }
 
 // getInputFromVim opens vim for the user to input a message and returns the message as a string or an error.
-func getInputFromVim() (string, error) {
-	tempFile, err := os.CreateTemp(".", "")
+func getInputFromVim(workingDir string) (string, error) {
+	tempFile, err := os.CreateTemp(workingDir, "")
 	if err != nil {
 		return "", err
 	}

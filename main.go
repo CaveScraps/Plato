@@ -29,10 +29,15 @@ func setup() (Config, error) {
 		return Config{}, errors.New("Too many arguments provided, is your message in quotes?")
 	}
 
+	noteDir, exists := os.LookupEnv("PLATO_NOTES_DIR")
+	if !exists {
+		noteDir = os.Getenv("HOME") + "/notes/"
+	}
+
 	message, err := func() (string, error) {
 		if len(os.Args) == 1 {
 			// If there is no command line message, open vim for user to input message.
-			data, err := getInputFromVim()
+			data, err := getInputFromVim(noteDir)
 			message := data
 			if err != nil {
 				return "", err
@@ -49,11 +54,6 @@ func setup() (Config, error) {
 
 	date := string(os.Args[0])
 	time := time.Now().Format("15:04")
-
-	noteDir, exists := os.LookupEnv("PLATO_NOTES_DIR")
-	if !exists {
-		noteDir = os.Getenv("HOME") + "/notes/"
-	}
 
 	if err := os.MkdirAll(noteDir, 0777); err != nil {
 		return Config{}, err
